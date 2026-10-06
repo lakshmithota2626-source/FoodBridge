@@ -15,7 +15,7 @@ services:
           name: foodbridge-db
           property: connectionString
       - key: DB_SSL
-        value: "false"
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
