@@ -6,8 +6,8 @@ const DEMO_PASSWORD = 'Demo@1234'; // local/demo only
 const H = 3600 * 1000;
 const at = (hoursFromNow) => new Date(Date.now() + hoursFromNow * H);
 
-(async () => {
-  const c = await db.pool.connect();
+async function seed(pool = db.pool) {
+  const c = await pool.connect();
   try {
     await c.query('BEGIN');
     await c.query('TRUNCATE reports, reviews, notifications, claims, donations, ngo_profiles, donor_profiles, users RESTART IDENTITY CASCADE');
@@ -102,6 +102,16 @@ const at = (hoursFromNow) => new Date(Date.now() + hoursFromNow * H);
     throw e;
   } finally {
     c.release();
-    await db.pool.end();
   }
-})().catch((e) => { console.error(e); process.exit(1); });
+}
+
+if (require.main === module) {
+  seed()
+    .then(() => db.pool.end())
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
+}
+
+module.exports = { seed, DEMO_PASSWORD };

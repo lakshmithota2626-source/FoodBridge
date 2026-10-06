@@ -12,9 +12,17 @@ async function start() {
     const sql = fs.readFileSync(schemaPath, 'utf8');
     await db.pool.query(sql);
     console.log('✔ Schema applied');
+
+    // Auto-seed initial demo data if database is empty
+    const { rows } = await db.pool.query('SELECT COUNT(*) FROM users');
+    if (parseInt(rows[0].count, 10) === 0) {
+      console.log('Database empty, seeding demo accounts & donations...');
+      const { seed } = require('./db/seed');
+      await seed(db.pool);
+    }
   } catch (err) {
     // Log but do not exit — lets the server start even if DB is momentarily unreachable
-    console.error('⚠ Migration warning (server will still start):', err.message);
+    console.error('⚠ Migration/seed warning (server will still start):', err.message);
   }
 
   app.listen(env.port, () => {

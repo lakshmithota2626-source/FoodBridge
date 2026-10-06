@@ -1,9 +1,30 @@
 const { Pool } = require('pg');
 const env = require('./env');
 
+function getSslConfig() {
+  if (!env.databaseUrl) return false;
+  if (process.env.DB_SSL === 'false') return false;
+  try {
+    const parsed = new URL(env.databaseUrl);
+    const host = parsed.hostname;
+    // Internal Render database hostnames are like "dpg-xxxxxx-a" (no dots)
+    if (host && host.startsWith('dpg-') && !host.includes('.')) {
+      return false;
+    }
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return false;
+    }
+  } catch (e) {
+    if (env.databaseUrl.includes('dpg-') && !env.databaseUrl.includes('.render.com')) {
+      return false;
+    }
+  }
+  return env.dbSsl ? { rejectUnauthorized: false } : false;
+}
+
 const pool = new Pool({
   connectionString: env.databaseUrl,
-  ssl: env.dbSsl ? { rejectUnauthorized: false } : undefined,
+  ssl: getSslConfig(),
 });
 
 /** Run fn inside a transaction; commits on success, rolls back on any error. */
