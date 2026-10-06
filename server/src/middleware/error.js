@@ -20,6 +20,11 @@ const errorHandler = (err, req, res, _next) => {
   if (err.code === '23514') return res.status(400).json({ message: 'Some values are not allowed' });
 
   console.error('[error]', err);
-  res.status(500).json({ message: 'Something went wrong on our side. Please try again.', ...(env.nodeEnv === 'development' && { debug: err.message }) });
+  res.status(500).json({
+    message: 'Something went wrong on our side. Please try again.',
+    error: err.message,
+    code: err.code,
+    detail: err.detail,
+  });
 };
 module.exports = { notFound, errorHandler };
