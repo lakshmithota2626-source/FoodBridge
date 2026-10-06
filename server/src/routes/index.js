@@ -9,7 +9,7 @@ const role = require('../controllers/roleController');
 const misc = require('../controllers/miscController');
 const admin = require('../controllers/adminController');
 
-router.get('/health', (_req, res) => res.json({ status: 'ok' }));
+router.get('/health', (_req, res) => res.json({ status: 'ok', service: 'FoodBridge' }));
 
 // Public
 router.get('/public/stats', donation.publicStats);
@@ -21,8 +21,13 @@ router.post('/auth/login', validate(auth.loginSchema), auth.login);
 router.get('/auth/me', authenticateUser, auth.me);
 router.put('/auth/profile', authenticateUser, validate(auth.profileSchema), auth.updateProfile);
 
-// Everything below requires a valid token
-router.use(authenticateUser);
+// Authenticate only known protected route families. Keeping this scoped means
+// an invalid /api/* URL reaches the API 404 handler instead of looking like an
+// unauthenticated endpoint.
+router.use([
+  '/donations', '/claims', '/donor', '/ngo', '/notifications',
+  '/reviews', '/reports', '/admin',
+], authenticateUser);
 
 // Donations
 router.post('/donations', requireDonor, upload.single('image'), validate(donation.donationSchema), donation.create);

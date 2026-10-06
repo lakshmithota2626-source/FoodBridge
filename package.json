@@ -1,0 +1,11 @@
+{
+  "name": "foodbridge",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix client install --include=dev && npm --prefix client run build && npm --prefix server install --omit=dev",
+    "start": "node server/src/index.js",
+    "migrate": "npm --prefix server run migrate",
+    "seed": "npm --prefix server run seed",
+    "test": "npm --prefix server test"
+  }
+}
